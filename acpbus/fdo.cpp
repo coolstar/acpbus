@@ -95,6 +95,17 @@ Fdo_Create(
     }
 
     {
+        WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS IdleSettings;
+
+        WDF_DEVICE_POWER_POLICY_IDLE_SETTINGS_INIT(&IdleSettings, IdleCanWakeFromS0);
+        IdleSettings.IdleTimeoutType = SystemManagedIdleTimeout;
+        IdleSettings.IdleTimeout = IdleTimeoutDefaultValue;
+        IdleSettings.DxState = PowerDeviceD3;
+
+        WdfDeviceAssignS0IdleSettings(wdfDevice, &IdleSettings);
+    }
+
+    {
         WDF_DEVICE_STATE deviceState;
         WDF_DEVICE_STATE_INIT(&deviceState);
 
