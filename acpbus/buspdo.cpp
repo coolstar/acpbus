@@ -179,16 +179,21 @@ Bus_CreatePdo(
         //
         WdfDeviceInitSetDeviceType(DeviceInit, FILE_DEVICE_BUS_EXTENDER);
 
-        //
-        // Provide DeviceID, HardwareIDs, CompatibleIDs and InstanceId
-        //
-        status = RtlUnicodeStringPrintf(&deviceId, L"CSAUDIO\\ACP&CLTR_REV_%02X",
-             Desc->CodecIds.RevId);
+        //Provide InstanceId
+        status = RtlUnicodeStringPrintf(&deviceId, L"00000000");
         if (!NT_SUCCESS(status)) {
             return status;
         }
 
         status = WdfPdoInitAssignInstanceID(DeviceInit, &deviceId);
+        if (!NT_SUCCESS(status)) {
+            return status;
+        }
+
+        //
+        // Provide DeviceID, HardwareIDs, CompatibleIDs
+        status = RtlUnicodeStringPrintf(&deviceId, L"CSAUDIO\\ACP&CLTR_REV_%02X",
+             Desc->CodecIds.RevId);
         if (!NT_SUCCESS(status)) {
             return status;
         }
@@ -292,6 +297,7 @@ Bus_CreatePdo(
     pnpCaps.Removable = WdfFalse;
     pnpCaps.EjectSupported = WdfFalse;
     pnpCaps.SurpriseRemovalOK = WdfFalse;
+    pnpCaps.UniqueID = WdfTrue;
 
     pnpCaps.Address = 0;
     pnpCaps.UINumber = 0;
