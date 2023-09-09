@@ -144,6 +144,20 @@ BOOLEAN dsp_interrupt(
     return handled;
 }
 
+VOID dsp_dpc(
+    WDFINTERRUPT Interrupt,
+    WDFOBJECT AssociatedObject) {
+
+    UNREFERENCED_PARAMETER(AssociatedObject);
+
+    WDFDEVICE Device = WdfInterruptGetDevice(Interrupt);
+    PFDO_CONTEXT fdoCtx = Fdo_GetContext(Device);
+
+    if (fdoCtx->dspDPCCallback) {
+        fdoCtx->dspDPCCallback(fdoCtx->dspInterruptContext);
+    }
+}
+
 NTSTATUS
 Fdo_Initialize(
     _In_ PFDO_CONTEXT FdoCtx
@@ -164,7 +178,7 @@ Fdo_Initialize(
     WDF_INTERRUPT_CONFIG_INIT(
         &interruptConfig,
         dsp_interrupt,
-        NULL);
+        dsp_dpc);
 
     status = WdfInterruptCreate(
         device,

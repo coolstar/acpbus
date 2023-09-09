@@ -29,6 +29,7 @@ typedef struct _FDO_CONTEXT
     BOOLEAN ControllerEnabled;
 
     PADSP_INTERRUPT_CALLBACK dspInterruptCallback;
+    PADSP_DPC_CALLBACK dspDPCCallback;
     PVOID dspInterruptContext;
     PVOID sofTplg;
     UINT64 sofTplgSz;

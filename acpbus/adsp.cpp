@@ -55,7 +55,7 @@ NTSTATUS ADSPSetPowerState(_In_ PVOID _context, _In_ DEVICE_POWER_STATE powerSta
 	return status;
 }
 
-NTSTATUS ADSPRegisterInterrupt(_In_ PVOID _context, _In_ PADSP_INTERRUPT_CALLBACK callback, _In_ PVOID callbackContext) {
+NTSTATUS ADSPRegisterInterrupt(_In_ PVOID _context, _In_ PADSP_INTERRUPT_CALLBACK callback, _In_ PADSP_DPC_CALLBACK dpcCallback, _In_ PVOID callbackContext) {
 	if (!_context)
 		return STATUS_NO_SUCH_DEVICE;
 
@@ -65,6 +65,7 @@ NTSTATUS ADSPRegisterInterrupt(_In_ PVOID _context, _In_ PADSP_INTERRUPT_CALLBAC
 	}
 
 	devData->FdoContext->dspInterruptCallback = callback;
+	devData->FdoContext->dspDPCCallback = dpcCallback;
 	devData->FdoContext->dspInterruptContext = callbackContext;
 	return STATUS_SUCCESS;
 }
@@ -83,6 +84,19 @@ NTSTATUS ADSPUnregisterInterrupt(_In_ PVOID _context) {
 	return STATUS_SUCCESS;
 }
 
+NTSTATUS ADSPQueueDpcForInterrupt(_In_ PVOID _context) {
+	if (!_context)
+		return STATUS_NO_SUCH_DEVICE;
+
+	PPDO_DEVICE_DATA devData = (PPDO_DEVICE_DATA)_context;
+	if (!devData->FdoContext) {
+		return STATUS_NO_SUCH_DEVICE;
+	}
+
+	BOOL ret = WdfInterruptQueueDpcForIsr(devData->FdoContext->Interrupt);
+	return ret ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL;
+}
+
 ACPDSP_BUS_INTERFACE ACPDSP_BusInterface(PVOID Context) {
 	ACPDSP_BUS_INTERFACE busInterface;
 	RtlZeroMemory(&busInterface, sizeof(ACPDSP_BUS_INTERFACE));
@@ -98,6 +112,7 @@ ACPDSP_BUS_INTERFACE ACPDSP_BusInterface(PVOID Context) {
 	busInterface.SetDSPPowerState = ADSPSetPowerState;
 	busInterface.RegisterInterrupt = ADSPRegisterInterrupt;
 	busInterface.UnregisterInterrupt = ADSPUnregisterInterrupt;
+	busInterface.QueueDPCForInterrupt = ADSPQueueDpcForInterrupt;
 	busInterface.SMNQuery = SMNQuery;
 
 	return busInterface;

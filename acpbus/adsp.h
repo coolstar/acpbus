@@ -1,13 +1,11 @@
 #ifndef __ADSP_INTERFACE
 #define __ADSP_INTERFACE
-#include <hdaudio.h>
-
 //
 // The GUID_ACPDSP_BUS_INTERFACE interface GUID
 //
-// {863DD2AC-5B54-4C57-8487-782F9ADFE8D5}
+// {863DD2AC-5B54-4C57-8487-782F9ADFE8D6}
 DEFINE_GUID(GUID_ACPDSP_BUS_INTERFACE,
-    0x863dd2ac, 0x5b54, 0x4c57, 0x84, 0x87, 0x78, 0x2f, 0x9a, 0xdf, 0xe8, 0xd5);
+    0x863dd2ac, 0x5b54, 0x4c57, 0x84, 0x87, 0x78, 0x2f, 0x9a, 0xdf, 0xe8, 0xd6);
 
 typedef struct _TPLG_INFO {
     PVOID sofTplg;
@@ -17,7 +15,9 @@ typedef struct _TPLG_INFO {
 typedef _Must_inspect_result_ NTSTATUS(*PGET_ADSP_RESOURCES) (_In_ PVOID _context, _Out_ _PCI_BAR* acpBar, PTPLG_INFO tplgInfo, _Out_ BUS_INTERFACE_STANDARD* pciConfig);
 typedef _Must_inspect_result_ NTSTATUS(*PDSP_SET_POWER_STATE) (_In_ PVOID _context, _In_ DEVICE_POWER_STATE newPowerState);
 typedef _Must_inspect_result_ BOOL(*PADSP_INTERRUPT_CALLBACK)(PVOID context);
-typedef _Must_inspect_result_ NTSTATUS(*PREGISTER_ADSP_INTERRUPT) (_In_ PVOID _context, _In_ PADSP_INTERRUPT_CALLBACK callback, _In_ PVOID callbackContext);
+typedef _Must_inspect_result_ VOID(*PADSP_DPC_CALLBACK)(PVOID context);
+typedef _Must_inspect_result_ NTSTATUS (*PADSP_QUEUE_DPC)(PVOID context);
+typedef _Must_inspect_result_ NTSTATUS(*PREGISTER_ADSP_INTERRUPT) (_In_ PVOID _context, _In_ PADSP_INTERRUPT_CALLBACK callback, _In_ PADSP_DPC_CALLBACK dpcCallback, _In_ PVOID callbackContext);
 typedef _Must_inspect_result_ NTSTATUS(*PUNREGISTER_ADSP_INTERRUPT) (_In_ PVOID _context);
 typedef _Must_inspect_result_ NTSTATUS (*PSMNQuery)(_In_ PVOID _context, _In_ UINT32 Addr, _In_ PUINT32 PData, _In_ BOOL Write);
 
@@ -39,6 +39,7 @@ typedef struct _ACPDSP_BUS_INTERFACE
     PDSP_SET_POWER_STATE          SetDSPPowerState;
     PREGISTER_ADSP_INTERRUPT      RegisterInterrupt;
     PUNREGISTER_ADSP_INTERRUPT    UnregisterInterrupt;
+    PADSP_QUEUE_DPC               QueueDPCForInterrupt;
 
     PSMNQuery                     SMNQuery;
 } ACPDSP_BUS_INTERFACE, * PACPDSP_BUS_INTERFACE;
