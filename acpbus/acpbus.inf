@@ -58,6 +58,8 @@ CopyFiles=Drivers_Dir
 
 [ACPBus_Device.NT.HW]
 AddReg=ACPBus_AddReg
+Include=pci.inf
+Needs=PciD3ColdSupported.HW
 
 [Drivers_Dir]
 acpbus.sys
